@@ -6,7 +6,7 @@ public class basicMain
 {
 	public static void main(String[] args)
 	{
-		DatabaseHandler.setDatabasesDirectory(".//databases//");
+		DatabaseHandler.setDatabasesDirectory("databases/");
 		
 		DatabaseHandler dH=new DatabaseHandler("Bob");
 		DatabaseHandler dH2 = new DatabaseHandler("Johnny");

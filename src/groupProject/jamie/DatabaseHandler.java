@@ -147,7 +147,7 @@ public class DatabaseHandler
 
   public String[] getFollowers() 
   {
-	  String followRequestSQL = "SELECT * FROM user_followers WHERE ACCEPTED=1;";
+	  String followRequestSQL = "SELECT USER_NAME FROM user_followers WHERE ACCEPTED=1;";
 	  ResultSet followRequests = connectExecuteAndGet(connectedUser, followRequestSQL);
 	  ArrayList<String> results = new ArrayList<String>();
 	  try
@@ -170,7 +170,7 @@ public class DatabaseHandler
   
   public String[] getFollowedUsers()
   {
-	  String followRequestSQL = "SELECT * FROM user_followed_users WHERE ACCEPTED=1;";
+	  String followRequestSQL = "SELECT USER_NAME FROM user_followed_users WHERE ACCEPTED=1;";
 	  ResultSet followRequests = connectExecuteAndGet(connectedUser, followRequestSQL);
 	  ArrayList<String> results = new ArrayList<String>();
 	  try
@@ -290,7 +290,7 @@ public class DatabaseHandler
   public ArrayList<PostDetails> getAllPosts(String username) 
   {
 	  ArrayList<PostDetails> postResults = new ArrayList<PostDetails>();
-	  String userPostsSQL = "SELECT * FROM user_honks;";
+	  String userPostsSQL = "SELECT ID,OWNER,HYPERLINK,CONTENT FROM user_honks;";
 	  ResultSet userPosts = connectExecuteAndGet(username, userPostsSQL);
 	  try
 	  {

@@ -1,13 +1,17 @@
 package groupProject.jamie;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 
+
+/**
+ * 
+ * @author Jamiebuckley
+ * @version 1.1
+ */
 public class DatabaseHandler 
 {
-
 	public class PostDetails
 	{
 		int primaryKey;
@@ -54,8 +58,9 @@ public class DatabaseHandler
   private static String databasesDirectory = ".";
   
   /**
-   * 
-   * @param username The username that represents the logged in user.
+   * Creates an instance of type DatabaseHandler.  Takes a String representing a logged in user.  Certain commands
+   * can only be perfomed on the logged in user, for security reasons.
+   * @param username The username (as a string) that represents the logged in user.
    */
   public DatabaseHandler(final String username)
   {
@@ -77,7 +82,7 @@ public class DatabaseHandler
   }
   
   /**
-   * 
+   * Sets the database directory string that will be added to database names.  The format of this string is Unix directory traversal from the root of the program's executing folder.  Therefore, a folder stored inside that root folder would be passed in the form "./<foldername>/"
    * @param directory The directory that the databases will be stored in.  Represented by standard Unix directory movement.  Default is "."
    */
   public static void setDatabasesDirectory(final String directory)
@@ -85,6 +90,10 @@ public class DatabaseHandler
 	  databasesDirectory=directory;
   }
 
+  /**
+   * 
+   * @return A string array of all users that exist in the system.
+   */
   public static String[] getAllUsers() 
   {
 	  File folder = new File(databasesDirectory);
@@ -116,12 +125,20 @@ public class DatabaseHandler
 	  return trimResults;
   }
 
+  /**
+   * @param Username The username to check the existence of, as a string.
+   * @return A boolean value of 1 (Exists) or 0 (Does not exist).
+   */
   public static Boolean doesUsernameExist(String Username) 
   {
 	  File f = new File(databasesDirectory+Username+".db");
 	  return (f.exists() && !f.isDirectory());
   }
   
+  /**
+   * 
+   * @return A string array representing all users that have requested to follow the logged in user (passed in constructor).
+   */
   public String[] getFollowRequests()
   {
 	  String followRequestSQL = "SELECT * FROM user_followers WHERE ACCEPTED=0";
@@ -145,6 +162,10 @@ public class DatabaseHandler
 	  return resultArray;
   }
 
+  /**
+   * 
+   * @return A string array representing all users that are currently following the logged in user.
+   */
   public String[] getFollowers() 
   {
 	  String followRequestSQL = "SELECT USER_NAME FROM user_followers WHERE ACCEPTED=1;";
@@ -168,6 +189,10 @@ public class DatabaseHandler
 	  return resultArray;
   }
   
+  /**
+   * 
+   * @return A string array representing the users that the logged in user is following.
+   */
   public String[] getFollowedUsers()
   {
 	  String followRequestSQL = "SELECT USER_NAME FROM user_followed_users WHERE ACCEPTED=1;";
@@ -191,6 +216,10 @@ public class DatabaseHandler
 	  return resultArray;
   }
 
+  /**
+   * 
+   * @param usernames A string array of all the users to grant a follower relationship to.
+   */
   public void acceptFollowerRequests(String[] usernames) 
   {
 	  if (usernames.length == 0)
@@ -216,6 +245,10 @@ public class DatabaseHandler
 	  }
   }
 
+  /**
+   * 
+   * @param usernames A string array of all the users to deny a follower relationship to.
+   */
   public void denyFollowerRequests(String[] usernames) 
   {
 	  String followAcceptSQL = "DELETE FROM user_followers WHERE ACCEPTED=0 AND ";
@@ -236,6 +269,10 @@ public class DatabaseHandler
 	  }
   }
 
+  /**
+   * 
+   * @param username Causes the connected user to request a follower relationship with the user designated by username.
+   */
   public void requestFollow(String username) 
   {
 	  String otherUserSQL = "INSERT OR IGNORE INTO user_followers (USER_NAME, ACCEPTED) VALUES ('" + connectedUser + "'," + "0);";
@@ -245,6 +282,10 @@ public class DatabaseHandler
 	  connectAndExecute(connectedUser, thisUserSQL);
   }
 
+  /**
+   * 
+   * @param username The username of the user to stop following.  Does nothing if user is not already being followed.
+   */
   public void stopFollow(String username) 
   {
 	  String stopFollowSQL = "DELETE FROM user_followed_users WHERE ACCEPTED=1 AND USER_NAME='"+username+"';";
@@ -253,11 +294,23 @@ public class DatabaseHandler
 	  connectAndExecute(username, otherUserStopFollow);
   }
 
+  /**
+   * 
+   * @param postContent The content of the post, as a string.
+   * @param isLink True if the post is to be styled as an HTML link, false otherwise.
+   */
   public void makeNewPost(String postContent, boolean isLink) 
   {
 	  makeNewPost(postContent, getFollowers(), isLink);
   }
 
+  
+  /**
+   * 
+   * @param postContent tThe content of the post, as a string.
+   * @param followers An array of usernames to send this post to.
+   * @param isLink True if the post is to be styled as an HTML link, false otherwise.
+   */
   public void makeNewPost(String postContent, String[] followers, boolean isLink) 
   {
 	  int link=(isLink)?1:0;
@@ -272,6 +325,10 @@ public class DatabaseHandler
 	  } 
   }
 
+  /**
+   * 
+   * @return An array of PostDetails of all the posts visible by the connectedUser
+   */
   public ArrayList<PostDetails> getAllPosts() 
   {
 	  ArrayList<PostDetails> postResults = new ArrayList<PostDetails>();
@@ -287,6 +344,11 @@ public class DatabaseHandler
 	  return postResults;
   }
 
+ /**
+  * 
+  * @param username The username to scan for posts.
+  * @return All posts that have been made by the passed in user.
+  */
   public ArrayList<PostDetails> getAllPosts(String username) 
   {
 	  ArrayList<PostDetails> postResults = new ArrayList<PostDetails>();
@@ -312,12 +374,21 @@ public class DatabaseHandler
 	  }
   }
 
+  /**
+   * Removes the post indicated by thePostKey
+   * @param thePostKey The post key (Accessible from PostDetails) to remove.
+   */
   public void removePost(int thePostKey) 
   {
 	  String deletePostSQL = "DELETE FROM user_honks WHERE ID="+thePostKey+";";
 	  connectAndExecute(connectedUser, deletePostSQL);
   }
   
+  /**
+   * Connects to a database indicated by username, and executes the passed in SQL
+   * @param username The username of the database
+   * @param SQL The SQL to execute
+   */
   private void connectAndExecute(String username, String SQL)
   {
 	  Connection connection = null;
@@ -336,6 +407,12 @@ public class DatabaseHandler
 	  }  
   }
   
+  /**
+   * 
+   * @param username The username of the database
+   * @param SQL The SQL to execute
+   * @return Gets the keys of the affected cells
+   */
   private ArrayList<Integer> connectExecuteAndGetKeys(String username, String SQL)
   {
 	  Connection connection = null;
@@ -362,6 +439,12 @@ public class DatabaseHandler
 	  }  
   }
   
+  /**
+   * 
+   * @param username The username of the database
+   * @param SQL The SQL to execute
+   * @return The resultset returned by the SQL query.
+   */
   private ResultSet connectExecuteAndGet(String username, String SQL)
   {
 	  Connection connection = null;

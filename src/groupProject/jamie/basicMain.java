@@ -9,6 +9,12 @@ public class basicMain
 		DatabaseHandler.setDatabasesDirectory("databases/");
 		
 		DatabaseHandler dH=new DatabaseHandler("Bob");
+		
+		dH.setUserDetails("Sydney", 28, 4, 1989);
+		
+		DatabaseHandler.UserDetails uD = dH.getUserDetails();
+		System.out.println(uD.city + " " + uD.birthday+ " " + uD.birthmonth + " " + uD.birthyear);
+		
 		DatabaseHandler dH2 = new DatabaseHandler("Johnny");
 		
 		

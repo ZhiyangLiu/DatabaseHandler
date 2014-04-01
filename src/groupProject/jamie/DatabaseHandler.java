@@ -135,13 +135,67 @@ public class DatabaseHandler
 	  return (f.exists() && !f.isDirectory());
   }
   
+ 
+  //********************************
+  //Code relating to logged in user
+  //*******************************
+  
+  public void setUserDetails(String city, int birthday, int birthmonth, int birthyear)
+  {
+	  
+	  String updateDetailsSQL = "INSERT OR REPLACE INTO user_data (ID, CITY, BIRTHDAY, BIRTHMONTH, BIRTHYEAR) VALUES (0, '"
+	  		+ city + "'," + birthday + "," + birthmonth + "," + birthyear + ");";
+	  connectAndExecute(connectedUser, updateDetailsSQL);
+  }
+  
+  public class UserDetails
+  {
+	  public final String city;
+	  public final int birthday;
+	  public final int birthmonth;
+	  public final int birthyear;
+	  
+	  public UserDetails(String city, int birthday, int birthmonth, int birthyear)
+	  {
+		  this.city = new String(city);
+		  this.birthday = birthday;
+		  this.birthmonth = birthmonth;
+		  this.birthyear = birthyear;
+	  }
+  }
+  
+  public UserDetails getUserDetails()
+  {
+	  String getDetailsSQL = "SELECT CITY, BIRTHDAY, BIRTHMONTH, BIRTHYEAR from user_data WHERE ID=0;";
+	  ResultSet dSet = connectExecuteAndGet(connectedUser, getDetailsSQL);
+	  
+	  UserDetails details = null;
+	  try 
+	  {
+		details = new UserDetails(dSet.getString("CITY"), dSet.getInt("BIRTHDAY"), dSet.getInt("BIRTHMONTH"), dSet.getInt("BIRTHYEAR"));
+	  } 
+	  catch (SQLException e) 
+	  {
+		e.printStackTrace();
+	  }
+	  try 
+	  {
+		dSet.close();	
+	  } 
+	  catch (SQLException e) 
+	  {
+		e.printStackTrace();
+	  }
+	  return details;
+  }
+  
   /**
    * 
    * @return A string array representing all users that have requested to follow the logged in user (passed in constructor).
    */
   public String[] getFollowRequests()
   {
-	  String followRequestSQL = "SELECT * FROM user_followers WHERE ACCEPTED=0";
+	  String followRequestSQL = "SELECT * FROM user_followers WHERE ACCEPTED=0;";
 	  ResultSet followRequests = connectExecuteAndGet(connectedUser, followRequestSQL);
 	  ArrayList<String> results = new ArrayList<String>();
 	  try
@@ -235,6 +289,7 @@ public class DatabaseHandler
 		  if (i < usernames.length-1)
 			  followAcceptSQL += " OR ";
 	  }
+	  followAcceptSQL += ";";
 	  
 	  connectAndExecute(connectedUser, followAcceptSQL);
 	  
@@ -259,6 +314,7 @@ public class DatabaseHandler
 		  if (i < usernames.length-1)
 			  followAcceptSQL += " OR ";
 	  }
+	  followAcceptSQL += ";";
 	  
 	  connectAndExecute(connectedUser, followAcceptSQL);
 	  
@@ -404,7 +460,11 @@ public class DatabaseHandler
 	  {
 		  e.printStackTrace();
 		  return;
-	  }  
+	  } 
+	  finally
+	  {
+		  
+	  }
   }
   
   /**
@@ -471,7 +531,7 @@ public class DatabaseHandler
    */
   private void createNewUser(final String username)
   {	  
-	  String createUserSQL = "CREATE TABLE user_data (ID INTEGER PRIMARY KEY, NAME TEXT NOT NULL, VALUE TEXT);";
+	  String createUserSQL = "CREATE TABLE user_data (ID INTEGER PRIMARY KEY, CITY TEXT, BIRTHDAY INTEGER, BIRTHMONTH INTEGER, BIRTHYEAR INTEGER);";
 	  String createUserPostsSQL = "CREATE TABLE user_honks (ID INTEGER PRIMARY KEY, OWNER TEXT NOT NULL, HYPERLINK INTEGER NOT NULL, CONTENT TEXT);";
 	  String createUserFollowedPostsSQL = "CREATE TABLE user_followed_user_honks (ID INTEGER PRIMARY KEY, OWNER TEXT NOT NULL, FOREIGNKEY INTEGER NOT NULL);";
 	  String followedUsersSQL = "CREATE TABLE user_followed_users(ID INTEGER PRIMARY KEY, USER_NAME TEXT NOT NULL UNIQUE, ACCEPTED INTEGER NOT NULL);";

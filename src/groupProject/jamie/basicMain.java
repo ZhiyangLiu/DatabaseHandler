@@ -1,19 +1,78 @@
 package groupProject.jamie;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
+import rhysw.Message;
+import rhysw.TextMessage;
+import users.User;
+import users.User.WrongKindOfUserException;
 
 public class basicMain
 {
 	public static void main(String[] args)
 	{
 		DatabaseHandler.setDatabasesDirectory("databases/");
+		User u = new User("Bob");
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		java.util.Date bday =
+		null;
+		try
+		{
+			bday = sdf.parse("28-04-1989");
+		}
+		catch (ParseException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		u.setDetails("Robert", "Bobson", "Sydney", bday);
+		u.saveUserDetails();
+		u.loadUserDetails();
+		TextMessage m = new TextMessage("Bob", new java.util.Date());
+		m.setContent("Hi there, this is a first message!");
+		try
+		{
+			u.newMessage(m);
+		}
+		catch (WrongKindOfUserException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		u.getMessages();
+		
+		for (Message mess : u.messages)
+		{
+			System.out.println(mess.getContent()[0]);
+		}
+	}
+	
+	/*
+	public static void main(String[] args)
+	{
+		DatabaseHandler.setDatabasesDirectory("databases/");
 		
 		DatabaseHandler dH=new DatabaseHandler("Bob");
 		
-		dH.setUserDetails("Sydney", 28, 4, 1989);
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		java.util.Date bday =
+		null;
+		try
+		{
+			bday = sdf.parse("28-04-1989");
+		}
+		catch (ParseException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		dH.setUserDetails("Robert", "Smith", "Sydney", new Date(bday.getTime()));
 		
 		DatabaseHandler.UserDetails uD = dH.getUserDetails();
-		System.out.println(uD.city + " " + uD.birthday+ " " + uD.birthmonth + " " + uD.birthyear);
+		System.out.println(uD.city + " " + uD.birthday.toString());
 		
 		DatabaseHandler dH2 = new DatabaseHandler("Johnny");
 		
@@ -75,4 +134,5 @@ public class basicMain
 		System.out.println("End program");
 		
 	}
+	*/
 }

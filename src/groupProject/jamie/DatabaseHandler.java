@@ -18,9 +18,9 @@ public class DatabaseHandler
 		private String owner;
 		private boolean isUrl;
 		private String content;
-		private String date;
+		private Date date;
 		
-		public PostDetails(int PK, String owner, boolean isUrl, String date, String content)
+		public PostDetails(int PK, String owner, boolean isUrl, Date date, String content)
 		{
 			this.primaryKey = PK;
 			this.owner = owner;
@@ -42,7 +42,7 @@ public class DatabaseHandler
 			return content;
 		}
 		
-		public String getDate()
+		public Date getDate()
 		{
 			return date;
 		}
@@ -55,7 +55,7 @@ public class DatabaseHandler
 	
 	
   private final String connectedUser;
-  private static String databasesDirectory = ".";
+  private static String databasesDirectory = "";
   
   /**
    * Creates an instance of type DatabaseHandler.  Takes a String representing a logged in user.  Certain commands
@@ -140,53 +140,64 @@ public class DatabaseHandler
   //Code relating to logged in user
   //*******************************
   
-  public void setUserDetails(String city, int birthday, int birthmonth, int birthyear)
-  {
-	  
-	  String updateDetailsSQL = "INSERT OR REPLACE INTO user_data (ID, CITY, BIRTHDAY, BIRTHMONTH, BIRTHYEAR) VALUES (0, '"
-	  		+ city + "'," + birthday + "," + birthmonth + "," + birthyear + ");";
-	  connectAndExecute(connectedUser, updateDetailsSQL);
-  }
-  
   public class UserDetails
   {
+	  public final String firstname;
+	  public final String lastname;
 	  public final String city;
-	  public final int birthday;
-	  public final int birthmonth;
-	  public final int birthyear;
+	  public final Date birthday;
+	  public final Date lli;
 	  
-	  public UserDetails(String city, int birthday, int birthmonth, int birthyear)
+	  public UserDetails(String firstname, String lastname, String city, Date birthday, Date lli)
 	  {
-		  this.city = new String(city);
-		  this.birthday = birthday;
-		  this.birthmonth = birthmonth;
-		  this.birthyear = birthyear;
+		  this.firstname = (firstname != null)? new String(firstname) : "";
+		  this.lastname = (lastname != null)? new String(lastname) : "";
+		  this.city = (city != null)? new String(city) : "";
+		  this.birthday = (birthday != null)? (Date)birthday.clone() : null;
+		  this.lli = (lli != null)? (Date)lli.clone() : null;
 	  }
+  }
+  
+  public void setUserDetails(String firstname, String lastname, String city, Date birthday)
+  {
+	  
+	  String updateDetailsSQL = "INSERT OR REPLACE INTO user_data (ID, FIRSTNAME, LASTNAME, CITY, BIRTHDAY) VALUES (0, '"
+	  		+ firstname + "','" + lastname + "','" +  city + "'," + birthday + ");";
+	  connectAndExecute(connectedUser, updateDetailsSQL);
   }
   
   public UserDetails getUserDetails()
   {
-	  String getDetailsSQL = "SELECT CITY, BIRTHDAY, BIRTHMONTH, BIRTHYEAR from user_data WHERE ID=0;";
+	  String getDetailsSQL = "SELECT FIRSTNAME, LASTNAME, CITY, BIRTHDAY, LASTLOGGEDIN from user_data WHERE ID=0;";
 	  ResultSet dSet = connectExecuteAndGet(connectedUser, getDetailsSQL);
 	  
 	  UserDetails details = null;
 	  try 
 	  {
-		details = new UserDetails(dSet.getString("CITY"), dSet.getInt("BIRTHDAY"), dSet.getInt("BIRTHMONTH"), dSet.getInt("BIRTHYEAR"));
+		details = new UserDetails(dSet.getString("FIRSTNAME"), dSet.getString("LASTNAME"), dSet.getString("CITY"), dSet.getDate("BIRTHDAY"), dSet.getDate("LASTLOGGEDIN"));
 	  } 
 	  catch (SQLException e) 
 	  {
 		e.printStackTrace();
 	  }
-	  try 
+	  finally
 	  {
-		dSet.close();	
-	  } 
-	  catch (SQLException e) 
-	  {
-		e.printStackTrace();
+		  try 
+		  {
+			dSet.close();	
+		  } 
+		  catch (SQLException e) 
+		  {
+			e.printStackTrace();
+		  }
 	  }
 	  return details;
+  }
+  
+  public void setLastLoggedIn()
+  {
+	  String setDateSQL = "INSERT OR REPLACE INTO user_data (ID, LASTLOGGEDIN) SET LASTLOGGEDIN = date('now') WHERE ID=0;";
+	  connectAndExecute(connectedUser, setDateSQL);
   }
   
   /**
@@ -357,7 +368,8 @@ public class DatabaseHandler
    */
   public void makeNewPost(String postContent, boolean isLink) 
   {
-	  makeNewPost(postContent, getFollowers(), isLink);
+	  Date now = new Date(new java.util.Date().getTime());
+	  makeNewPost(postContent, now, getFollowers(), isLink);
   }
 
   
@@ -367,10 +379,10 @@ public class DatabaseHandler
    * @param followers An array of usernames to send this post to.
    * @param isLink True if the post is to be styled as an HTML link, false otherwise.
    */
-  public void makeNewPost(String postContent, String[] followers, boolean isLink) 
+  public void makeNewPost(String postContent, Date date, String[] followers, boolean isLink) 
   {
 	  int link=(isLink)?1:0;
-	  String PostSQL = "INSERT INTO user_honks (OWNER, HYPERLINK, CONTENT) VALUES ('"+connectedUser+"',"+link+",'"+postContent+"');";
+	  String PostSQL = "INSERT INTO user_honks (OWNER, DATEMADE, HYPERLINK, CONTENT) VALUES ('"+connectedUser+"',"+ date.toString() + ","+link+",'"+postContent+"');";
 	  ArrayList<Integer> keys = connectExecuteAndGetKeys(connectedUser, PostSQL);
 	  int postKey = keys.get(0);
 	  String otherUserPostSQL = "INSERT INTO user_followed_user_honks (OWNER, FOREIGNKEY) VALUES ('"+connectedUser+"',"+postKey+");";
@@ -408,7 +420,7 @@ public class DatabaseHandler
   public ArrayList<PostDetails> getAllPosts(String username) 
   {
 	  ArrayList<PostDetails> postResults = new ArrayList<PostDetails>();
-	  String userPostsSQL = "SELECT ID,OWNER,HYPERLINK,CONTENT FROM user_honks;";
+	  String userPostsSQL = "SELECT ID,OWNER,HYPERLINK, DATEMADE, CONTENT FROM user_honks;";
 	  ResultSet userPosts = connectExecuteAndGet(username, userPostsSQL);
 	  try
 	  {
@@ -418,7 +430,7 @@ public class DatabaseHandler
 			  String owner = userPosts.getString("OWNER");
 			  Boolean isLink = userPosts.getBoolean("HYPERLINK");
 			  String content = userPosts.getString("CONTENT");
-			  String date = "NOT DONE YET";
+			  Date date = userPosts.getDate("DATEMADE");
 			  PostDetails pd = new PostDetails(PK, owner, isLink, date, content);
 			  postResults.add(pd);
 		  }
@@ -426,6 +438,8 @@ public class DatabaseHandler
 	  }
 	  catch (SQLException e)
 	  {
+		  System.err.println("Error getting posts");
+		  e.printStackTrace();
 		  return null;
 	  }
   }
@@ -531,8 +545,8 @@ public class DatabaseHandler
    */
   private void createNewUser(final String username)
   {	  
-	  String createUserSQL = "CREATE TABLE user_data (ID INTEGER PRIMARY KEY, CITY TEXT, BIRTHDAY INTEGER, BIRTHMONTH INTEGER, BIRTHYEAR INTEGER);";
-	  String createUserPostsSQL = "CREATE TABLE user_honks (ID INTEGER PRIMARY KEY, OWNER TEXT NOT NULL, HYPERLINK INTEGER NOT NULL, CONTENT TEXT);";
+	  String createUserSQL = "CREATE TABLE user_data (ID INTEGER PRIMARY KEY, FIRSTNAME TEXT, LASTNAME TEXT, CITY TEXT, BIRTHDAY DATE, LASTLOGGEDIN DATE);";
+	  String createUserPostsSQL = "CREATE TABLE user_honks (ID INTEGER PRIMARY KEY, OWNER TEXT NOT NULL, DATEMADE DATE, HYPERLINK INTEGER NOT NULL, CONTENT TEXT);";
 	  String createUserFollowedPostsSQL = "CREATE TABLE user_followed_user_honks (ID INTEGER PRIMARY KEY, OWNER TEXT NOT NULL, FOREIGNKEY INTEGER NOT NULL);";
 	  String followedUsersSQL = "CREATE TABLE user_followed_users(ID INTEGER PRIMARY KEY, USER_NAME TEXT NOT NULL UNIQUE, ACCEPTED INTEGER NOT NULL);";
 	  String userFollowersSQL = "CREATE TABLE user_followers(ID INTEGER PRIMARY KEY, USER_NAME TEXT NOT NULL UNIQUE, ACCEPTED INTEGER NOT NULL);";

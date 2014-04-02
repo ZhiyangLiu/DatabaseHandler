@@ -1,41 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.5" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
   associations="true" dependencies="false" nesting-relationships="true">  
-  <class id="1" language="java" name="rhysw.HyperlinkMessage" project="DatabaseHandler" 
-    file="/DatabaseHandler/src/rhysw/HyperlinkMessage.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="136" y="243"/>    
+  <class id="1" language="java" name="users.User.WrongKindOfUserException" project="DatabaseHandler" 
+    file="/DatabaseHandler/src/users/User.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="98" width="219" x="151" y="353"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="2" language="java" name="rhysw.Message" project="DatabaseHandler" 
-    file="/DatabaseHandler/src/rhysw/Message.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="188" width="151" x="36" y="-78"/>    
+  <class id="2" language="java" name="users.PostOnlyUser" project="DatabaseHandler" 
+    file="/DatabaseHandler/src/users/PostOnlyUser.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="134" width="164" x="410" y="353"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="rhysw.TextMessage" project="DatabaseHandler" 
-    file="/DatabaseHandler/src/rhysw/TextMessage.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="378" y="190"/>    
+  <class id="3" language="java" name="users.FollowOnlyUser" project="DatabaseHandler" 
+    file="/DatabaseHandler/src/users/FollowOnlyUser.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="98" width="183" x="614" y="353"/>    
     <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
       visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
       <operations public="true" package="true" protected="true" private="true" static="true"/>    
     </display>  
   </class>  
-  <generalization id="4">    
-    <end type="SOURCE" refId="3"/>    
-    <end type="TARGET" refId="2"/>  
-  </generalization>  
+  <class id="4" language="java" name="users.User" project="DatabaseHandler" file="/DatabaseHandler/src/users/User.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="638" width="245" x="410" y="-325"/>    
+    <display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="true" protected="true" private="true" static="true"/>    
+    </display>  
+  </class>  
   <generalization id="5">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="2"/>  
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="4"/>  
   </generalization>  
+  <generalization id="6">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="4"/>  
+  </generalization>  
+  <nesting id="7">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="1"/>  
+  </nesting>  
   <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
     accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    
